@@ -12,6 +12,11 @@ import (
 	"time"
 )
 
+const (
+	monitorings = 3
+	delay       = 5
+)
+
 func main() {
 	name := getName()
 	showIntroduction(name)
@@ -99,17 +104,16 @@ func testSite(site string) {
 	resp, err := http.Get(site)
 	if err != nil {
 		fmt.Printf("Error accessing site: %s - %v\n", site, err)
-		logResult(site, false)
+		log.Printf("Error accessing site: %s - %v\n", site, err) // Log error
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 200 {
 		fmt.Printf("Site: %s was successfully loaded!\n", site)
-		logResult(site, true)
 	} else {
 		fmt.Printf("Site: %s has problems. Status code: %d\n", site, resp.StatusCode)
-		logResult(site, false)
+		log.Printf("Site: %s has problems. Status code: %d\n", site, resp.StatusCode) // Log non-200 status
 	}
 }
 
@@ -139,21 +143,6 @@ func readSitesFromFile() []string {
 		}
 	}
 	return sites
-}
-
-func logResult(site string, status bool) {
-	file, err := os.OpenFile("log.txt", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Printf("An error occurred while opening/creating the log.txt file: %v\n", err)
-		return
-	}
-	defer file.Close()
-
-	logLine := fmt.Sprintf("%s - %s - online: %t\n", time.Now().Format("02/01/2006 15:04:05"), site, status)
-	_, err = file.WriteString(logLine)
-	if err != nil {
-		log.Printf("An error occurred while writing to the log.txt file: %v\n", err)
-	}
 }
 
 func printLogs() {
