@@ -3,6 +3,8 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
+	"log"
 	"os"
 	"strings"
 )
@@ -56,4 +58,32 @@ func readCommand() int {
 	fmt.Scan(&commandRead)
 	fmt.Printf("The chosen command was %d\n", commandRead)
 	return commandRead
+}
+
+func readSitesFromFile() []string {
+	file, err := os.Open("sites.txt")
+	if err != nil {
+		log.Printf("An error occurred while opening the sites.txt file: %v\n", err)
+		return nil
+	}
+	defer file.Close()
+
+	var sites []string
+	reader := bufio.NewReader(file)
+	for {
+		line, err := reader.ReadString('\n')
+		line = strings.TrimSpace(line)
+		if line != "" {
+			sites = append(sites, line)
+		}
+
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Printf("An error occurred while reading the sites.txt file: %v\n", err)
+			break
+		}
+	}
+	return sites
 }
