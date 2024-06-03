@@ -5,8 +5,15 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"strings"
+	"time"
+)
+
+const (
+	monitorings = 3
+	delay       = 5
 )
 
 func main() {
@@ -58,6 +65,42 @@ func readCommand() int {
 	fmt.Scan(&commandRead)
 	fmt.Printf("The chosen command was %d\n", commandRead)
 	return commandRead
+}
+
+func startMonitoring() {
+	fmt.Println("Monitoring...")
+
+	sites := readSitesFromFile()
+	if len(sites) == 0 {
+		fmt.Println("No sites found to monitor.")
+		return
+	}
+
+	for i := 0; i < monitorings; i++ {
+		for _, site := range sites {
+			testSite(site)
+		}
+		time.Sleep(delay * time.Second)
+		fmt.Println()
+	}
+}
+
+func testSite(site string) {
+	resp, err := http.Get(site)
+	if err != nil {
+		fmt.Printf("Error accessing site: %s - %v\n", site, err)
+		// logResult(site, false)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 {
+		fmt.Printf("Site: %s was successfully loaded!\n", site)
+		// logResult(site, true)
+	} else {
+		fmt.Printf("Site: %s has problems. Status code: %d\n", site, resp.StatusCode)
+		// logResult(site, false)
+	}
 }
 
 func readSitesFromFile() []string {
