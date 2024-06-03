@@ -12,14 +12,11 @@ import (
 	"time"
 )
 
-const (
-	monitorings = 3
-	delay       = 5
-)
-
 func main() {
 	name := getName()
 	showIntroduction(name)
+
+	delay, monitorings := getMonitoringSettings()
 
 	for {
 		showMenu(name)
@@ -27,7 +24,7 @@ func main() {
 
 		switch command {
 		case 1:
-			startMonitoring()
+			startMonitoring(delay, monitorings)
 		case 2:
 			fmt.Println("Displaying logs...")
 			printLogs()
@@ -68,7 +65,19 @@ func readCommand() int {
 	return commandRead
 }
 
-func startMonitoring() {
+func getMonitoringSettings() (int, int) {
+	var delay, monitorings int
+
+	fmt.Println("Enter the delay between checks (in seconds):")
+	fmt.Scan(&delay)
+
+	fmt.Println("Enter the number of monitorings:")
+	fmt.Scan(&monitorings)
+
+	return delay, monitorings
+}
+
+func startMonitoring(delay, monitorings int) {
 	fmt.Println("Monitoring...")
 
 	sites := readSitesFromFile()
@@ -81,7 +90,7 @@ func startMonitoring() {
 		for _, site := range sites {
 			testSite(site)
 		}
-		time.Sleep(delay * time.Second)
+		time.Sleep(time.Duration(delay) * time.Second)
 		fmt.Println()
 	}
 }
